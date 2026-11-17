@@ -250,6 +250,14 @@ p {
   text-decoration: underline;
 }
 
+.login-sign {
+  margin-top: 12px;
+  color: #91a6b6;
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
 .admin-shell {
   display: grid;
   grid-template-columns: 232px minmax(0, 1fr);

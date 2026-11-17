@@ -1878,6 +1878,14 @@ p {
   text-align: center;
 }
 
+.signature {
+  display: block;
+  margin-top: 6px;
+  color: #7f97a9;
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+}
+
 .source-foot a {
   color: #6f8da3;
 }

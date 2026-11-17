@@ -97,7 +97,7 @@
   function shell(active, content, options) {
     options = options || {};
     app.classList.remove('login-mode');
-    app.innerHTML = header(active) + '<main class="page ' + (options.narrow ? 'narrow' : '') + '">' + content + '<div class="source-foot">江苏省张家港中等专业学校 · 校园失物招领<br><a href="https://zjgzzx.zjgedu.cn/" target="_blank" rel="noopener">内容来源：学校官网</a> · <a href="admin.html">管理端</a></div></main>';
+    app.innerHTML = header(active) + '<main class="page ' + (options.narrow ? 'narrow' : '') + '">' + content + '<div class="source-foot">江苏省张家港中等专业学校 · 校园失物招领<br><a href="https://zjgzzx.zjgedu.cn/" target="_blank" rel="noopener">内容来源：学校官网</a> · <a href="admin.html">管理端</a><span class="signature">制作：张佳琦</span></div></main>';
     C.hydrateMedia(app);
     if (options.scroll !== false) window.scrollTo(0, 0);
   }
@@ -144,7 +144,7 @@
       + '<div class="field"><label for="loginPass">密码</label><input id="loginPass" name="password" type="password" autocomplete="current-password" required placeholder="请输入密码"></div>'
       + '<button class="btn btn-primary login-submit" type="submit">登录</button>'
       + '<div class="demo-bar"><button type="button" data-demo="student">信息工程系演示</button><button type="button" data-demo="student2">机械汽车系演示</button></div>'
-      + '</form><div class="login-alt">账号由学校统一开通，忘记密码请联系学生工作处</div><div class="login-foot">江苏省张家港中等专业学校 · 校园失物招领<br>请勿在平台发布身份证号码、银行卡号等敏感信息</div></div></section></div>';
+      + '</form><div class="login-alt">账号由学校统一开通，忘记密码请联系学生工作处</div><div class="login-foot">江苏省张家港中等专业学校 · 校园失物招领<br>请勿在平台发布身份证号码、银行卡号等敏感信息<span class="signature">制作：张佳琦</span></div></div></section></div>';
   }
 
   function homePage() {
@@ -264,7 +264,6 @@
       + '<div class="profile-numbers"><div class="profile-number"><strong>' + mine.length + '</strong><span>发布信息</span></div><div class="profile-number"><strong>' + returned + '</strong><span>已归还</span></div><div class="profile-number"><strong>' + (returned * 5) + '</strong><span>热心值</span></div></div>'
       + '<div class="kindness-note"><strong>仁心 · 一点点热心</strong><br>每一次认真归还，都会让下一个丢东西的同学少着急一点。平台会记录已归还的信息，但不会公开你的联系方式。</div></div>'
       + '<div class="menu-list" style="margin-top:12px"><a class="menu-item" href="#/my">' + icon('list') + '我的发布' + icon('arrow', 'menu-arrow') + '</a><a class="menu-item" href="#/posts">' + icon('box') + '全部信息' + icon('arrow', 'menu-arrow') + '</a><a class="menu-item" href="admin.html">' + icon('shield') + '管理端入口' + icon('arrow', 'menu-arrow') + '</a><button class="menu-item" type="button" data-action="logout">' + icon('logout') + '退出登录' + icon('arrow', 'menu-arrow') + '</button></div>'
-      + '<div class="source-foot">江苏省张家港中等专业学校 · 校园失物招领<br><a href="https://zjgzzx.zjgedu.cn/" target="_blank" rel="noopener">内容来源：学校官网</a></div>';
     shell('my', content);
   }
 

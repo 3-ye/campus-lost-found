@@ -106,7 +106,7 @@
       + '<div class="field"><label for="adminPass">密码</label><input id="adminPass" name="password" type="password" autocomplete="current-password" required placeholder="请输入密码"></div>'
       + '<button class="btn btn-primary btn-block" type="submit">登录</button>'
       + '<div class="demo-bar"><button type="button" data-demo="teacher">学生工作处演示</button><button type="button" data-demo="teacher2">信息工程系演示</button></div>'
-      + '</form><div class="login-foot"><a href="index.html">返回学生端</a><button type="button" data-action="reset-demo">重置演示数据</button><span>仅限教师使用</span></div></div></section></div>';
+      + '</form><div class="login-foot"><a href="index.html">返回学生端</a><button type="button" data-action="reset-demo">重置演示数据</button><span>仅限教师使用</span></div><div class="login-sign">制作：张佳琦</div></div></section></div>';
   }
 
   function sidebar(active) {
@@ -128,7 +128,7 @@
   }
 
   function shell(active, content) {
-    app.innerHTML = '<div class="admin-shell">' + sidebar(active) + '<div class="admin-main">' + topbar() + '<main class="content">' + content + '<footer class="admin-footer">江苏省张家港中等专业学校 · 校园失物招领管理端</footer></main></div></div>';
+    app.innerHTML = '<div class="admin-shell">' + sidebar(active) + '<div class="admin-main">' + topbar() + '<main class="content">' + content + '<footer class="admin-footer">江苏省张家港中等专业学校 · 校园失物招领管理端 · 制作：张佳琦</footer></main></div></div>';
     C.hydrateMedia(app);
     window.scrollTo(0, 0);
   }
