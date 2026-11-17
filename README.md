@@ -46,6 +46,12 @@
     └── vendor/crypto-js/   密码哈希组件
 ```
 
+## 线上演示
+
+学生端：https://3-ye.github.io/campus-lost-found/
+
+管理端：https://3-ye.github.io/campus-lost-found/admin.html
+
 ## 本地运行
 
 在项目根目录执行：
