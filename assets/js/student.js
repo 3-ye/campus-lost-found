@@ -153,11 +153,13 @@
     const feed = all.slice(0, 6);
     const returned = all.filter(function (p) { return p.status === 'returned'; }).slice(0, 2);
     const categories = C.categories();
+    const fiveHearts = '<section class="section five-hearts"><div class="section-head"><div><h2>五心服务</h2><p>学校“五心”育人体系在失物招领里的五个落点</p></div></div><div class="heart-grid"><div class="heart-item"><strong>红心</strong><span>为师生办实事，让校园服务更有温度。</span></div><div class="heart-item"><strong>仁心</strong><span>暖心接力、归还留言，认真对待每一件失物。</span></div><div class="heart-item"><strong>恒心</strong><span>持续维护分类、数据和审核记录，不半途而废。</span></div><div class="heart-item"><strong>匠心</strong><span>图片回退、手机适配、细节测试，把体验做扎实。</span></div><div class="heart-item"><strong>创心</strong><span>双端协同、先审后发，用数字方式服务校园。</span></div></div></section>';
     const returnHtml = returned.length ? '<div class="return-strip"><div class="return-title"><strong>暖心接力</strong><span>已经归还 ' + summary.returned + ' 件</span></div><div class="return-items">'
       + returned.map(function (p) { return '<div class="return-item"><a href="' + postHref(p.id) + '">' + esc(p.title) + '</a><span>' + esc(p.publisher_name) + ' · ' + C.relativeTime(p.returned_at) + '</span></div>'; }).join('') + '</div></div>' : '';
-    const content = '<section class="home-hero"><div class="hero-image"></div><div class="hero-shade"></div><div class="hero-content"><div class="hero-copy"><div class="hero-eyebrow">校园互助 · 失物招领</div><h1>让每一件失物，<br>都能找到回家的路。</h1><p>捡到东西不用纠结发在哪里，丢了东西也不用到处问。发布、认领、归还，都在这里完成。</p><div class="hero-stats"><span>可查看 ' + (summary.published + summary.returned) + ' 条</span><span>已归还 ' + summary.returned + ' 件</span><span>热心同学 ' + summary.helpers + ' 位</span></div></div><div class="hero-quote"><strong>仁心</strong><span>不是一句口号，是把捡到的东西认真还回去。</span></div></div>'
+    const content = '<section class="home-hero"><div class="hero-image"></div><div class="hero-shade"></div><div class="hero-content"><div class="hero-copy"><div class="hero-eyebrow">校园数字服务 · 失物招领</div><h1>让每一件失物，<br>都能找到回家的路。</h1><p>捡到东西不用纠结发在哪里，丢了东西也不用到处问。发布、认领、归还，都在这里完成。</p><div class="hero-stats"><span>可查看 ' + (summary.published + summary.returned) + ' 条</span><span>已归还 ' + summary.returned + ' 件</span><span>热心同学 ' + summary.helpers + ' 位</span></div></div><div class="hero-quote"><strong>五心服务</strong><span>把五心放进每一次发布、认领和归还。</span></div></div>'
       + '<form class="hero-search" data-form="home-search">' + icon('search') + '<input type="search" name="q" placeholder="搜物品名称或地点" aria-label="搜索失物招领"><button type="submit">搜索</button></form></section>'
       + '<div class="quick-actions"><a class="quick-card" href="#/publish?type=lost"><span class="quick-icon">' + icon('search') + '</span><span><strong>我丢了东西</strong><span>发布一条寻物信息</span></span></a><a class="quick-card" href="#/publish?type=found"><span class="quick-icon">' + icon('heart') + '</span><span><strong>我捡到东西</strong><span>留下招领信息，等失主认领</span></span></a><a class="quick-card" href="#/posts"><span class="quick-icon">' + icon('list') + '</span><span><strong>看看全部信息</strong><span>按分类和关键词查找</span></span></a></div>'
+      + fiveHearts
       + returnHtml
       + '<section class="section"><div class="section-head"><div><h2>置顶与最新</h2><p>置顶信息优先，其余按发布时间排序</p></div><a href="#/posts">查看全部 ' + all.length + ' 条</a></div>'
       + (feed.length ? '<div class="card-grid">' + feed.map(postCard).join('') + '</div>' : '<div class="empty">' + icon('box') + '<h2>还没有信息</h2><p>发布第一条失物招领，让同学看到。</p></div>') + '</section>'
@@ -213,6 +215,8 @@
     const content = '<a class="back-link" href="#/posts">' + icon('back') + '返回全部信息</a><div class="detail-layout"><div class="detail-main"><div class="detail-image">' + imageMarkup(post) + '</div><div class="detail-body"><div class="detail-badges">' + typeBadge(post) + (post.pinned ? '<span class="status-badge is-pinned">置顶</span>' : '') + statusBadge(post) + '<span class="status-badge">' + esc(post.category_name) + '</span></div>'
       + '<h1>' + esc(post.title) + '</h1>'
       + (post.status === 'returned' ? '<div class="return-note"><strong>这件物品已经回到主人身边</strong>' + esc(post.thanks || '谢谢每一位帮忙留意的同学。') + '</div>' : '')
+      + (post.status === 'pending' ? '<div class="review-note"><strong>等待教师审核</strong>审核通过后，这条信息会出现在首页和全部信息里。</div>' : '')
+      + (post.status === 'rejected' ? '<div class="review-note is-reject"><strong>审核未通过</strong>' + esc(post.review_note || '内容不符合发布要求，请修改后重新提交。') + '</div>' : '')
       + '<div class="detail-description">' + esc(post.description) + '</div>'
       + '<div class="detail-facts"><div class="fact"><span>地点</span><strong>' + esc(post.location) + '</strong></div><div class="fact"><span>' + (post.type === 'lost' ? '丢失时间' : '捡到时间') + '</span><strong>' + C.formatDate(post.happened_at, true) + '</strong></div><div class="fact"><span>发布时间</span><strong>' + C.formatDate(post.created_at, true) + '</strong></div><div class="fact"><span>浏览</span><strong>' + Number(post.views || 0) + ' 次</strong></div></div>'
       + '<div class="detail-actions">' + actions.join('') + '<a class="btn btn-ghost" href="#/posts">继续看看</a></div></div></div>'
@@ -224,7 +228,7 @@
 
   function publishPage(params) {
     const type = params.get('type') === 'found' ? 'found' : 'lost';
-    const content = pageHead('发布信息', '发布后立即展示在首页，请确认物品信息准确', '<a class="btn" href="#/my">我的发布</a>')
+    const content = pageHead('发布信息', '提交后进入待审核，教师审核通过后公开展示', '<a class="btn" href="#/my">我的发布</a>')
       + '<div class="form-layout"><form class="form-panel" data-form="publish"><h2>填写物品信息</h2>'
       + '<div class="type-toggle"><label class="type-option"><input type="radio" name="type" value="lost"' + (type === 'lost' ? ' checked' : '') + '><span><strong>我丢了东西</strong><span>发布寻物信息</span></span></label><label class="type-option"><input type="radio" name="type" value="found"' + (type === 'found' ? ' checked' : '') + '><span><strong>我捡到东西</strong><span>发布招领信息</span></span></label></div>'
       + '<div class="field"><label for="postTitle">物品名称</label><input id="postTitle" name="title" maxlength="40" required placeholder="例如：一张校园一卡通"></div>'
@@ -234,8 +238,8 @@
       + '<div class="field"><label for="postDescription">详细描述</label><textarea id="postDescription" name="description" maxlength="400" required placeholder="写清物品特征、颜色、明显标记，方便核对。"></textarea><div class="field-hint">不要填写身份证号、银行卡号等敏感信息。</div></div>'
       + '<div class="field"><label for="postContact">联系方式</label><input id="postContact" name="contact" maxlength="60" required placeholder="例如：2025级网络班 林知夏，或认领地点"></div>'
       + '<div class="field"><label class="file-field" for="postImage"><span><strong>上传物品照片</strong><br>可选，有图会优先显示图片；没有图片时显示分类图标</span><input id="postImage" name="image" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png"></label><div class="image-preview" data-image-preview hidden><img alt="物品照片预览"></div></div>'
-      + '<div class="form-actions"><a class="btn" href="#/home">取消</a><button class="btn btn-primary" type="submit">发布信息</button></div></form>'
-      + '<aside class="form-aside"><h3>发布前请确认</h3><p>发布后立即展示，请写清物品特征，方便失主或捡到的人核对。</p><p>捡到贵重物品时，建议先交到学生工作处或门卫室，再发布招领信息。</p><p>认领时请让对方描述物品细节，避免冒领。</p></aside></div>';
+      + '<div class="form-actions"><a class="btn" href="#/home">取消</a><button class="btn btn-primary" type="submit">提交审核</button></div></form>'
+      + '<aside class="form-aside"><h3>发布前请确认</h3><p>提交后由教师审核，通过后才会展示；请写清物品特征，方便失主或捡到的人核对。</p><p>捡到贵重物品时，建议先交到学生工作处或门卫室，再发布招领信息。</p><p>认领时请让对方描述物品细节，避免冒领；联系方式仅登录后可见。</p></aside></div>';
     shell('publish', content);
   }
 
@@ -245,14 +249,16 @@
     const list = filter ? mine.filter(function (p) { return p.status === filter; }) : mine;
     const counts = {
       all: mine.length,
+      pending: mine.filter(function (p) { return p.status === 'pending'; }).length,
       published: mine.filter(function (p) { return p.status === 'published'; }).length,
-      returned: mine.filter(function (p) { return p.status === 'returned'; }).length
+      returned: mine.filter(function (p) { return p.status === 'returned'; }).length,
+      rejected: mine.filter(function (p) { return p.status === 'rejected'; }).length
     };
-    const tabs = [['', '全部'], ['published', '已发布'], ['returned', '已归还']];
+    const tabs = [['', '全部'], ['pending', '待审核'], ['published', '已发布'], ['returned', '已归还'], ['rejected', '已驳回']];
     const content = '<div class="my-head"><span class="my-avatar">' + esc(student.real_name.slice(0, 1)) + '</span><div><h1>' + esc(student.real_name) + '</h1><p>' + esc(C.departmentName(student.department)) + ' · ' + esc(student.class_name) + ' · <a class="my-publish-link" href="#/publish">发布新信息</a></p></div><div class="my-stats"><div><strong>' + mine.length + '</strong><span>发布</span></div><div><strong>' + counts.returned + '</strong><span>已归还</span></div><div><strong>' + counts.published + '</strong><span>已发布</span></div></div></div>'
       + '<div class="my-toolbar"><div class="status-tabs">' + tabs.map(function (t) { return '<a class="' + (filter === t[0] ? 'active' : '') + '" href="#/my' + (t[0] ? '?status=' + t[0] : '') + '">' + t[1] + (counts[t[0] || 'all'] ? ' ' + counts[t[0] || 'all'] : '') + '</a>'; }).join('') + '</div></div>'
       + (list.length ? '<div class="my-list">' + list.map(function (p) {
-        return '<article class="my-item"><a class="my-thumb" href="' + postHref(p.id) + '">' + imageMarkup(p) + '</a><div class="my-copy"><h2><a href="' + postHref(p.id) + '">' + esc(p.title) + '</a></h2><p>' + C.typeText(p.type) + ' · ' + esc(p.category_name) + ' · ' + C.relativeTime(p.created_at) + '</p><span class="status-badge ' + C.statusClass(p.status) + '">' + C.statusText(p.status) + '</span></div><div class="my-actions">' + (p.status === 'published' ? '<button class="btn btn-sm" type="button" data-action="return-post" data-id="' + p.id + '">标记归还</button>' : '') + '</div></article>';
+        return '<article class="my-item"><a class="my-thumb" href="' + postHref(p.id) + '">' + imageMarkup(p) + '</a><div class="my-copy"><h2><a href="' + postHref(p.id) + '">' + esc(p.title) + '</a></h2><p>' + C.typeText(p.type) + ' · ' + esc(p.category_name) + ' · ' + C.relativeTime(p.created_at) + '</p><span class="status-badge ' + C.statusClass(p.status) + '">' + C.statusText(p.status) + '</span>' + (p.status === 'rejected' && p.review_note ? '<p class="review-reason">驳回原因：' + esc(p.review_note) + '</p>' : '') + '</div><div class="my-actions">' + (p.status === 'published' ? '<button class="btn btn-sm" type="button" data-action="return-post" data-id="' + p.id + '">标记归还</button>' : '') + '</div></article>';
       }).join('') + '</div>' : '<div class="empty">' + icon('box') + '<h2>这里还没有信息</h2><p>丢了东西或捡到东西，都可以发布一条。</p><a class="btn btn-primary" href="#/publish">发布信息</a></div>');
     shell('my', content);
   }
@@ -262,7 +268,7 @@
     const returned = mine.filter(function (p) { return p.status === 'returned'; }).length;
     const content = '<div class="profile-card"><div class="profile-head"><span class="my-avatar">' + esc(student.real_name.slice(0, 1)) + '</span><div><h1>' + esc(student.real_name) + '</h1><p>' + esc(C.departmentName(student.department)) + ' · ' + esc(student.class_name) + ' · @' + esc(student.username) + '</p></div></div>'
       + '<div class="profile-numbers"><div class="profile-number"><strong>' + mine.length + '</strong><span>发布信息</span></div><div class="profile-number"><strong>' + returned + '</strong><span>已归还</span></div><div class="profile-number"><strong>' + (returned * 5) + '</strong><span>热心值</span></div></div>'
-      + '<div class="kindness-note"><strong>仁心 · 一点点热心</strong><br>每一次认真归还，都会让下一个丢东西的同学少着急一点。平台会记录已归还的信息，但不会公开你的联系方式。</div></div>'
+      + '<div class="kindness-note"><strong>五心 · 一点点热心</strong><br>每一次认真发布和归还，都是学校数字服务的一部分。平台会记录已归还的信息，但不会公开你的联系方式。</div></div>'
       + '<div class="menu-list" style="margin-top:12px"><a class="menu-item" href="#/my">' + icon('list') + '我的发布' + icon('arrow', 'menu-arrow') + '</a><a class="menu-item" href="#/posts">' + icon('box') + '全部信息' + icon('arrow', 'menu-arrow') + '</a><a class="menu-item" href="admin.html">' + icon('shield') + '管理端入口' + icon('arrow', 'menu-arrow') + '</a><button class="menu-item" type="button" data-action="logout">' + icon('logout') + '退出登录' + icon('arrow', 'menu-arrow') + '</button></div>'
     shell('my', content);
   }
@@ -323,8 +329,8 @@
         contact: contact,
         image_key: imageKey
       }, student);
-      showToast('发布成功');
-      go('/home');
+      showToast('已提交审核，请等待教师审核');
+      go('/my?status=pending');
     } catch (err) {
       console.warn(err);
       button.disabled = false;

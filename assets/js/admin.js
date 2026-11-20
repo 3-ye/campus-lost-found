@@ -112,14 +112,16 @@
   function sidebar(active) {
     const nav = [
       ['dashboard', '/dashboard', '工作台', 'dashboard'],
+      ['review', '/review', '待审核', 'check'],
       ['posts', '/posts', '信息管理', 'posts'],
       ['categories', '/categories', '分类管理', 'category'],
       ['users', '/users', '学生账号', 'users'],
       ['logs', '/logs', '操作记录', 'logs']
     ];
+    const pendingCount = C.state.posts.filter(function (p) { return p.status === 'pending'; }).length;
     return '<aside class="sidebar"><div class="sidebar-brand"><span><strong>失物招领</strong><span>管理端</span></span><a class="sidebar-student" href="index.html" target="_blank">学生端</a></div><nav class="side-nav"><p class="side-label">信息与管理</p>'
       + nav.map(function (item) {
-        return '<a class="side-link ' + (active === item[0] ? 'active' : '') + '" href="#' + item[1] + '">' + icon(item[3]) + '<span>' + item[2] + '</span></a>';
+        return '<a class="side-link ' + (active === item[0] ? 'active' : '') + '" href="#' + item[1] + '">' + icon(item[3]) + '<span>' + item[2] + '</span>' + (item[0] === 'review' && pendingCount ? '<b class="side-count">' + pendingCount + '</b>' : '') + '</a>';
       }).join('') + '</nav><div class="sidebar-foot"><div class="side-user"><span class="side-avatar">' + esc(teacher.real_name.slice(0, 1)) + '</span><span><strong>' + esc(teacher.real_name) + '</strong><span>' + esc(teacher.class_name) + '</span></span></div><div class="side-links"><a href="index.html">学生端</a><button type="button" data-action="reset-demo">重置数据</button><button type="button" data-action="logout">退出登录</button></div></div></aside>';
   }
 
@@ -139,7 +141,7 @@
 
   function dashboardPage() {
     const s = C.summary();
-    const latest = C.state.posts.slice().sort(function (a, b) { return C.parseDate(b.created_at) - C.parseDate(a.created_at); }).slice(0, 4);
+    const latest = C.state.posts.filter(function (p) { return p.status === 'published' || p.status === 'returned'; }).sort(function (a, b) { return C.parseDate(b.created_at) - C.parseDate(a.created_at); }).slice(0, 4);
     const returned = C.state.posts.filter(function (p) { return p.status === 'returned'; }).slice(0, 3);
     const maxCount = Math.max.apply(null, C.categories().map(function (c) {
       return C.state.posts.filter(function (p) { return p.category_id === c.id; }).length;
@@ -156,14 +158,17 @@
       }).join('') + '</div></div></section>';
     const returnPanel = '<section class="panel"><div class="panel-head"><h3>最近归还</h3><a href="#/posts?status=returned">查看</a></div><div class="panel-body no-pad">'
       + (returned.length ? returned.map(function (p) { return '<div class="recent-return"><strong>' + esc(p.title) + '</strong><span>' + esc(p.publisher_name) + ' · ' + C.relativeTime(p.returned_at) + '</span></div>'; }).join('') : '<div class="empty">' + icon('heart') + '<h3>还没有归还记录</h3><p>学生标记归还后会显示在这里。</p></div>') + '</div></section>';
-    const tips = '<section class="panel"><div class="panel-head"><h3>管理提示</h3><span class="table-sub">置顶与删除</span></div><div class="panel-body"><div class="check-list"><div class="check-item"><b class="check-index">1</b><span><strong>置顶留给重要信息</strong><span>证件、贵重物品可以置顶，首页会优先展示，处理完记得取消。</span></span></div><div class="check-item"><b class="check-index">2</b><span><strong>删除要谨慎</strong><span>只有重复、广告或明显不实的信息才删除，删除后学生端同步消失。</span></span></div><div class="check-item"><b class="check-index">3</b><span><strong>归还由学生标记</strong><span>物品归还后，发布人可以在“我的发布”里标记，管理端只做查看。</span></span></div></div></div></section>';
-    const content = intro('工作台', '管理学生发布的信息，维护分类与账号', '<a class="btn btn-primary" href="#/posts">' + icon('posts') + '管理信息</a>')
+    const tips = '<section class="panel"><div class="panel-head"><h3>管理提示</h3><span class="table-sub">审核、置顶与删除</span></div><div class="panel-body"><div class="check-list"><div class="check-item"><b class="check-index">1</b><span><strong>先审核再展示</strong><span>学生提交的信息进入待审核，核对内容和联系方式后再通过或驳回。</span></span></div><div class="check-item"><b class="check-index">2</b><span><strong>置顶留给重要信息</strong><span>证件、贵重物品可以置顶，首页会优先展示，处理完记得取消。</span></span></div><div class="check-item"><b class="check-index">3</b><span><strong>删除要谨慎</strong><span>只有重复、广告或明显不实的信息才删除，删除后学生端同步消失。</span></span></div><div class="check-item"><b class="check-index">4</b><span><strong>归还由学生标记</strong><span>物品归还后，发布人可以在“我的发布”里标记，管理端只做查看。</span></span></div></div></div></section>';
+    const pending = C.state.posts.filter(function (p) { return p.status === 'pending'; });
+    const pendingBanner = '<a class="review-banner" href="#/review"><strong>待审核 ' + pending.length + ' 条</strong><span>学生提交的信息先审核，再公开展示</span><span class="review-banner-go">去处理</span></a>';
+    const content = intro('工作台', '审核学生提交的信息，维护分类与账号', '<a class="btn btn-primary" href="#/review">' + icon('posts') + '待审核队列</a>')
+      + pendingBanner
       + stats + '<div class="dashboard-grid"><div style="display:flex;flex-direction:column;gap:14px">' + latestPanel + tips + '</div><div style="display:flex;flex-direction:column;gap:14px">' + categoryPanel + returnPanel + '</div></div>'
-      + '<div class="kindness-quote"><strong>仁心 · 让归还更顺利</strong><br>置顶一条关键信息，可能就能让失主少找一整天。管理端只保留置顶和删除两件事，明显不合适的内容要及时删掉。</div>';
+      + '<div class="kindness-quote"><strong>五心 · 让数字服务更顺畅</strong><br>审核一条信息、置顶一条关键信息，可能就能让失主少找一整天。管理端负责审核、置顶和删除，明显不合适的内容要及时处理。</div>';
     shell('dashboard', content);
   }
 
-  function postsPage(params) {
+  function postsPage(params, isReview) {
     const q = (params.get('q') || '').trim().toLowerCase();
     const type = params.get('type') || '';
     const status = params.get('status') || '';
@@ -177,12 +182,26 @@
     if (status) list = list.filter(function (p) { return p.status === status; });
     if (category) list = list.filter(function (p) { return p.category_id === category; });
     const rows = list.map(function (p) {
-      return '<tr><td>' + typeMark(p) + '</td><td><a class="table-title" href="index.html#/post/' + p.id + '" target="_blank">' + (p.pinned ? '【置顶】' : '') + esc(p.title) + '</a><span class="table-sub">' + esc(p.location) + ' · ' + esc(p.publisher_name) + '</span></td><td>' + esc(p.category_name) + '</td><td>' + statusMark(p) + '</td><td>' + C.formatDate(p.created_at) + '</td><td><div class="table-actions"><a class="btn btn-sm" href="index.html#/post/' + p.id + '" target="_blank">查看</a>' + (p.status === 'published' ? '<button class="btn btn-sm ' + (p.pinned ? '' : 'btn-primary') + '" type="button" data-pin="' + p.id + '">' + (p.pinned ? '取消置顶' : '置顶') + '</button>' : '') + '<button class="btn btn-sm btn-danger" type="button" data-delete="' + p.id + '">删除</button></div></td></tr>';
+      const actions = [];
+      if (p.status === 'published' || p.status === 'returned') {
+        actions.push('<a class="btn btn-sm" href="index.html#/post/' + p.id + '" target="_blank">查看</a>');
+      } else {
+        actions.push('<button class="btn btn-sm" type="button" data-preview="' + p.id + '">预览</button>');
+      }
+      if (p.status === 'pending') {
+        actions.push('<button class="btn btn-sm btn-primary" type="button" data-approve="' + p.id + '">通过</button>');
+        actions.push('<button class="btn btn-sm" type="button" data-reject="' + p.id + '">驳回</button>');
+      }
+      if (p.status === 'published') {
+        actions.push('<button class="btn btn-sm ' + (p.pinned ? '' : 'btn-primary') + '" type="button" data-pin="' + p.id + '">' + (p.pinned ? '取消置顶' : '置顶') + '</button>');
+      }
+      actions.push('<button class="btn btn-sm btn-danger" type="button" data-delete="' + p.id + '">删除</button>');
+      return '<tr><td>' + typeMark(p) + '</td><td>' + (p.status === 'published' || p.status === 'returned' ? '<a class="table-title" href="index.html#/post/' + p.id + '" target="_blank">' + (p.pinned ? '【置顶】' : '') + esc(p.title) + '</a>' : '<span class="table-title">' + (p.pinned ? '【置顶】' : '') + esc(p.title) + '</span>') + '<span class="table-sub">' + esc(p.location) + ' · ' + esc(p.publisher_name) + '</span></td><td>' + esc(p.category_name) + '</td><td>' + statusMark(p) + '</td><td>' + C.formatDate(p.created_at) + '</td><td><div class="table-actions">' + actions.join('') + '</div></td></tr>';
     }).join('');
-    const content = intro('信息管理', '查看全部信息，置顶或删除', '<a class="btn" href="#/categories">分类管理</a>')
-      + '<form class="filter-bar" data-form="filter"><div class="mini-field"><label>关键词</label><input name="q" value="' + esc(q) + '" placeholder="标题、地点或姓名"></div><div class="mini-field"><label>类型</label><select name="type"><option value="">全部</option><option value="lost"' + (type === 'lost' ? ' selected' : '') + '>寻物</option><option value="found"' + (type === 'found' ? ' selected' : '') + '>招领</option></select></div><div class="mini-field"><label>状态</label><select name="status"><option value="">全部</option><option value="published"' + (status === 'published' ? ' selected' : '') + '>已发布</option><option value="returned"' + (status === 'returned' ? ' selected' : '') + '>已归还</option></select></div><div class="mini-field"><label>分类</label><select name="category"><option value="">全部</option>' + C.categories().map(function (c) { return '<option value="' + esc(c.id) + '"' + (category === c.id ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') + '</select></div><div class="filter-actions"><button class="btn btn-primary" type="submit">' + icon('search') + '筛选</button><a class="btn" href="#/posts">重置</a></div></form>'
+    const content = intro(isReview ? '待审核队列' : '信息管理', isReview ? '学生提交的信息先审核，通过后公开展示；驳回时填写原因' : '审核学生提交的信息，通过后展示；已发布信息可置顶或删除', isReview ? '<a class="btn" href="#/posts">全部信息</a>' : '<a class="btn" href="#/categories">分类管理</a>')
+      + '<form class="filter-bar" data-form="filter"><div class="mini-field"><label>关键词</label><input name="q" value="' + esc(q) + '" placeholder="标题、地点或姓名"></div><div class="mini-field"><label>类型</label><select name="type"><option value="">全部</option><option value="lost"' + (type === 'lost' ? ' selected' : '') + '>寻物</option><option value="found"' + (type === 'found' ? ' selected' : '') + '>招领</option></select></div><div class="mini-field"><label>状态</label><select name="status"><option value="">全部</option><option value="pending"' + (status === 'pending' ? ' selected' : '') + '>待审核</option><option value="published"' + (status === 'published' ? ' selected' : '') + '>已发布</option><option value="returned"' + (status === 'returned' ? ' selected' : '') + '>已归还</option><option value="rejected"' + (status === 'rejected' ? ' selected' : '') + '>已驳回</option></select></div><div class="mini-field"><label>分类</label><select name="category"><option value="">全部</option>' + C.categories().map(function (c) { return '<option value="' + esc(c.id) + '"' + (category === c.id ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') + '</select></div><div class="filter-actions"><button class="btn btn-primary" type="submit">' + icon('search') + '筛选</button><a class="btn" href="#/posts">重置</a></div></form>'
       + '<section class="panel"><div class="panel-head"><h3>共 ' + list.length + ' 条信息</h3><span class="table-sub">置顶优先，其余按发布时间倒序</span></div><div class="panel-body no-pad table-wrap"><table class="data-table"><thead><tr><th>类型</th><th>物品</th><th>分类</th><th>状态</th><th>发布时间</th><th>操作</th></tr></thead><tbody>' + (rows || '<tr><td colspan="6"><div class="empty">' + icon('search') + '<h3>没有符合条件的信息</h3><p>调整筛选后再试。</p></div></td></tr>') + '</tbody></table></div></section>';
-    shell('posts', content);
+    shell(isReview ? 'review' : 'posts', content);
   }
 
   function categoriesPage() {
@@ -210,12 +229,12 @@
 
   function logsPage() {
     const logs = C.state.logs.slice().sort(function (a, b) { return C.parseDate(b.created_at) - C.parseDate(a.created_at); });
-    const actionText = { submit: '发布', pin: '置顶', unpin: '取消置顶', return: '归还', delete: '删除' };
-    const actionClass = { submit: 'is-published', pin: 'is-pinned', unpin: 'is-unpin', return: 'is-returned', delete: 'is-disabled' };
+    const actionText = { submit: '提交审核', approve: '审核通过', reject: '审核驳回', pin: '置顶', unpin: '取消置顶', return: '归还', delete: '删除' };
+    const actionClass = { submit: 'is-pending', approve: 'is-published', reject: 'is-rejected', pin: 'is-pinned', unpin: 'is-unpin', return: 'is-returned', delete: 'is-disabled' };
     const rows = logs.map(function (l) {
       return '<tr><td><span class="table-title">' + esc(l.post_title) + '</span><span class="table-sub">信息编号 ' + l.post_id + '</span></td><td>' + esc(l.operator) + '</td><td><span class="status ' + (actionClass[l.action] || 'is-published') + '">' + (actionText[l.action] || l.action) + '</span></td><td>' + esc(l.reason || '') + '</td><td>' + C.formatDate(l.created_at, true) + '</td></tr>';
     }).join('');
-    const content = intro('操作记录', '发布、置顶、归还和删除都会留痕', '')
+    const content = intro('操作记录', '提交、审核、置顶、归还和删除都会留痕', '')
       + '<section class="panel"><div class="panel-head"><h3>共 ' + logs.length + ' 条记录</h3></div><div class="panel-body no-pad table-wrap"><table class="data-table"><thead><tr><th>信息</th><th>操作人</th><th>动作</th><th>说明</th><th>时间</th></tr></thead><tbody>' + (rows || '<tr><td colspan="5"><div class="empty">' + icon('logs') + '<h3>暂无操作记录</h3></div></td></tr>') + '</tbody></table></div></section>';
     shell('logs', content);
   }
@@ -265,6 +284,42 @@
     });
   }
 
+  function previewPost(id) {
+    const post = C.postById(id);
+    if (!post) return;
+    const dialog = openDialog('审核 / 预览', '<div class="review-preview">' + postImage(post, 'review-image') + '<div class="review-preview-info"><span class="status is-' + (post.status === 'pending' ? 'pending' : post.status === 'rejected' ? 'rejected' : 'published') + '">' + C.statusText(post.status) + '</span><h3>' + esc(post.title) + '</h3><p>' + C.typeText(post.type) + ' · ' + esc(post.category_name) + ' · ' + esc(post.location) + '</p><p class="review-description">' + esc(post.description) + '</p><dl><dt>发布人</dt><dd>' + esc(post.publisher_name) + ' · ' + esc(C.departmentName(post.publisher_department)) + ' · ' + esc(post.publisher_class) + '</dd><dt>联系方式</dt><dd>' + esc(post.contact) + '</dd><dt>发布时间</dt><dd>' + C.formatDate(post.created_at, true) + '</dd>' + (post.review_note ? '<dt>审核说明</dt><dd>' + esc(post.review_note) + '</dd>' : '') + '</dl></div></div>',
+      '<button class="btn" type="button" data-cancel>关闭</button>' + (post.status === 'pending' ? '<button class="btn btn-primary" type="button" data-preview-approve="' + post.id + '">通过</button><button class="btn btn-danger" type="button" data-preview-reject="' + post.id + '">驳回</button>' : ''));
+    dialog.querySelector('[data-cancel]').addEventListener('click', function () { dialog.close(); });
+    C.hydrateMedia(dialog);
+    const approve = dialog.querySelector('[data-preview-approve]');
+    if (approve) approve.addEventListener('click', function () { dialog.close(); approvePost(Number(approve.getAttribute('data-preview-approve'))); });
+    const reject = dialog.querySelector('[data-preview-reject]');
+    if (reject) reject.addEventListener('click', function () { dialog.close(); rejectPostDialog(Number(reject.getAttribute('data-preview-reject'))); });
+  }
+
+  function approvePost(id) {
+    const post = C.approvePost(id, teacher);
+    if (!post) { showToast('这条信息不在待审核状态', 'error'); return; }
+    showToast('审核通过，信息已公开展示');
+    renderRoute();
+  }
+
+  function rejectPostDialog(id) {
+    const post = C.postById(id);
+    if (!post || post.status !== 'pending') { showToast('这条信息不在待审核状态', 'error'); return; }
+    const dialog = openDialog('驳回信息', '<p>驳回《' + esc(post.title) + '》，请填写原因，学生端会看到。</p><div class="field"><label for="rejectReason">驳回原因</label><textarea id="rejectReason" maxlength="120" placeholder="例如：描述过于笼统，无法核对物品特征。"></textarea></div>',
+      '<button class="btn" type="button" data-cancel>取消</button><button class="btn btn-danger" type="button" data-confirm-reject>确认驳回</button>');
+    dialog.querySelector('[data-cancel]').addEventListener('click', function () { dialog.close(); });
+    dialog.querySelector('[data-confirm-reject]').addEventListener('click', function () {
+      const reason = dialog.querySelector('#rejectReason').value.trim();
+      if (!reason) { showToast('请填写驳回原因', 'error'); return; }
+      C.rejectPost(id, reason, teacher);
+      dialog.close();
+      showToast('已驳回，学生端会显示原因');
+      renderRoute();
+    });
+  }
+
   function deletePost(id) {
     const post = C.postById(id);
     confirmAction('删除信息', '确定删除《' + (post ? post.title : '这条信息') + '》吗？删除后学生端也会消失。', '确认删除', function () {
@@ -297,6 +352,7 @@
     const path = current.path;
     if (path === '/login') loginPage();
     else if (path === '/dashboard') dashboardPage();
+    else if (path === '/review') postsPage(new URLSearchParams('status=pending'), true);
     else if (path === '/posts') postsPage(current.params);
     else if (path === '/categories') categoriesPage();
     else if (path === '/users') usersPage();
@@ -340,6 +396,12 @@
       });
       return;
     }
+    const preview = event.target.closest('[data-preview]');
+    if (preview) { previewPost(Number(preview.getAttribute('data-preview'))); return; }
+    const approve = event.target.closest('[data-approve]');
+    if (approve) { approvePost(Number(approve.getAttribute('data-approve'))); return; }
+    const reject = event.target.closest('[data-reject]');
+    if (reject) { rejectPostDialog(Number(reject.getAttribute('data-reject'))); return; }
     const pin = event.target.closest('[data-pin]');
     if (pin) {
       const post = C.togglePin(Number(pin.getAttribute('data-pin')), teacher);

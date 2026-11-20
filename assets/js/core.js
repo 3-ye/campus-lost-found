@@ -213,19 +213,43 @@
       publisher_name: user.real_name,
       publisher_department: user.department,
       publisher_class: user.class_name,
-      status: 'published',
+      status: 'pending',
       pinned: false,
       image_url: '',
       image_key: data.image_key || '',
+      review_note: '',
       thanks: '',
       created_at: nowString(),
       returned_at: '',
       views: 0
     };
     state.posts.unshift(post);
-    addLog(post, 'submit', '学生发布', user);
+    addLog(post, 'submit', '提交审核', user);
     save();
     emit({ type: 'post:new', post: post });
+    return post;
+  }
+
+  function approvePost(id, operator) {
+    const post = postById(id);
+    if (!post || post.status !== 'pending') return null;
+    post.status = 'published';
+    post.review_note = '';
+    addLog(post, 'approve', '审核通过', operator);
+    save();
+    emit({ type: 'post:review', post: post });
+    return post;
+  }
+
+  function rejectPost(id, reason, operator) {
+    const post = postById(id);
+    if (!post || post.status !== 'pending') return null;
+    post.status = 'rejected';
+    post.pinned = false;
+    post.review_note = String(reason || '').trim() || '内容不符合发布要求';
+    addLog(post, 'reject', post.review_note, operator);
+    save();
+    emit({ type: 'post:review', post: post });
     return post;
   }
 
@@ -249,7 +273,7 @@
 
   function markReturned(id, thanks, operator) {
     const post = postById(id);
-    if (!post) return null;
+    if (!post || post.status !== 'published') return null;
     post.status = 'returned';
     post.pinned = false;
     post.returned_at = nowString();
@@ -357,20 +381,24 @@
   }
 
   function statusText(status) {
-    return { published: '已发布', returned: '已归还' }[status] || '已发布';
+    return { pending: '待审核', published: '已发布', returned: '已归还', rejected: '已驳回' }[status] || '待审核';
   }
 
   function statusClass(status) {
-    return { published: 'is-published', returned: 'is-returned' }[status] || '';
+    return { pending: 'is-pending', published: 'is-published', returned: 'is-returned', rejected: 'is-rejected' }[status] || 'is-pending';
   }
 
   function summary() {
     const published = state.posts.filter(function (p) { return p.status === 'published'; });
     const returned = state.posts.filter(function (p) { return p.status === 'returned'; });
     const pinned = state.posts.filter(function (p) { return p.pinned; });
+    const pending = state.posts.filter(function (p) { return p.status === 'pending'; });
+    const rejected = state.posts.filter(function (p) { return p.status === 'rejected'; });
     const helpers = new Set(returned.map(function (p) { return p.publisher_id; }));
     return {
       total: state.posts.length,
+      pending: pending.length,
+      rejected: rejected.length,
       published: published.length,
       returned: returned.length,
       pinned: pinned.length,
@@ -468,6 +496,8 @@
     postById,
     postsOfUser,
     addPost,
+    approvePost,
+    rejectPost,
     deletePost,
     togglePin,
     markReturned,
